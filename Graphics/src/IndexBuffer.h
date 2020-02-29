@@ -12,6 +12,10 @@ public:
 	// count = number of indices , data = array of indices
 	~IndexBuffer();
 
+	IndexBuffer();
+
+	void setIndexBuffer(const unsigned int* data, unsigned int count);
+	
 	void Bind() const;
 
 	void Unbind() const;

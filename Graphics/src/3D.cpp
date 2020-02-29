@@ -8,6 +8,7 @@
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include  "Texture.h"
+#include "Mesh.h"
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -143,7 +144,6 @@ int main()
 	text2.Bind(1);
 	ourShader.setInt("texture1", 0);
 	ourShader.setInt("texture2", 1);
-
 
 	// render loop
 	// -----------
