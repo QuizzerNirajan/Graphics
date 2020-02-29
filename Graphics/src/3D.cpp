@@ -5,6 +5,7 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "VertexBuffer.h"
+#include "IndexBuffer.h"
 #include "VertexArray.h"
 #include  "Texture.h"
 
@@ -130,7 +131,9 @@ int main()
 	layout.Push<float>(2);
 	va.AddBuffer(vb, layout);
 
-	
+	// Index Buffer objectc reation
+	// Similar to VertexBuffer
+	// eg IndexBuffer ib(indices array, count of indices) 
 
 	ourShader.use();
 	
@@ -173,6 +176,9 @@ int main()
 
 		// render arrays
 		va.Bind();
+		// bind index buffer here
+		// eg . ib.Bind();
+		// also glDrawElements() to draw the indices.
 		for (unsigned int i = 0; i < 10; i++)
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
