@@ -9,6 +9,9 @@ public:
     // Data for the data of vertex buffer and size is the size of it
     VertexBuffer(const void *data, unsigned int size);
 
+	VertexBuffer();
+
+	void setVertexBuffer(const void* data, unsigned int size);
 	~VertexBuffer();
 
 	void Bind() const;

@@ -59,7 +59,7 @@ public:
 	{
 		m_Elements.push_back({GL_UNSIGNED_INT, count, GL_FALSE });
 		//m_Stride += count * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_INT);
-		m_Stride += 5 * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_INT);
+		m_Stride += count * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_INT);
 	}
 
 	template <>
@@ -67,7 +67,7 @@ public:
 	{
 		m_Elements.push_back({ GL_UNSIGNED_BYTE, count, GL_TRUE });
 		//m_Stride += count * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_BYTE);
-		m_Stride += 5 * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_BYTE);
+		m_Stride += count * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_BYTE);
 	}
 
 	inline const std::vector<VertexBufferElement> GetElements() const { return m_Elements; }
