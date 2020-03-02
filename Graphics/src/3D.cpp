@@ -8,7 +8,8 @@
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include  "Texture.h"
-#include "Mesh.h"
+#include "Model.h"
+using namespace std;
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -29,6 +30,7 @@ bool firstMouse = true;
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
+
 
 int main()
 {
@@ -132,18 +134,23 @@ int main()
 	layout.Push<float>(2);
 	va.AddBuffer(vb, layout);
 
-	// Index Buffer objectc reation
+	// Index Buffer object creation
 	// Similar to VertexBuffer
 	// eg IndexBuffer ib(indices array, count of indices) 
-
-	ourShader.use();
 	
 	Texture text1("res/textures/cherno.jpg");
 	Texture text2("res/textures/eagle.png");
 	text1.Bind(0);
 	text2.Bind(1);
-	ourShader.setInt("texture1", 0);
+	ourShader.use();
+	ourShader.setInt("texture1" ,0);
 	ourShader.setInt("texture2", 1);
+
+		//Shader ourShader("res/shaders/1.model_loading.vs", "res/shaders/1.model_loading.fs");
+
+		//// load models
+		//// -----------
+		//Model ourModel("res/objects/nanosuit/nanosuit.obj");
 
 	// render loop
 	// -----------
@@ -161,8 +168,8 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		text1.Bind(0);
-		text2.Bind(1);
+		/*text1.Bind(0);
+		text2.Bind(1);*/
 		// activate shader
 		ourShader.use();
 

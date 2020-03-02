@@ -6,8 +6,7 @@ in vec2 TexCoord;
 // texture samplers
 uniform sampler2D texture1;
 uniform sampler2D texture2;
-
-uniform sampler2D texture_diffuse1;
+//uniform sampler2D texture_diffuse1;
 
 
 void main()

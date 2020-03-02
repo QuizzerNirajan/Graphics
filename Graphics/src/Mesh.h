@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "includes.h"
@@ -9,7 +8,6 @@
 #include "VertexBuffer.h"
 #include "VertexBufferLayout.h"
 #include "IndexBuffer.h"
-
 
 struct Vertex {
 	// position
@@ -23,7 +21,6 @@ struct Vertex {
 	// bitangent
 	glm::vec3 Bitangent;
 };
-
 
 class Mesh {
 public:
