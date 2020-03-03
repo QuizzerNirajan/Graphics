@@ -25,6 +25,13 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
+bool spotLightEnabled = false;
+bool spotKeyPressed = false;
+bool dirLightEnabled = false;
+bool dirKeyPressed = false;
+bool pointLightEnabled = false;
+bool pointKeyPressed = false;
+
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -68,15 +75,15 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 	glEnable(GL_FRAMEBUFFER_SRGB);
 
 	// build and compile shaders
 	// -------------------------
-	Shader ourShader("res/shaders/model_loading.vs", "res/shaders/model_loading.fs");
+	Shader myShader("res/shaders/model_loading.vs", "res/shaders/model_loading.fs");
 	// skybox shader
 	// lamp shader
-	Shader lampShader("res/shaders/lamp.vs", "res/shaders/lamp.fs");
+	/*Shader lampShader("res/shaders/lamp.vs", "res/shaders/lamp.fs");*/
 	Shader skyboxShader("res/shaders/skybox.vs", "res/shaders/skybox.fs");
 	// load models
 	  //Model ourModel("res/models/nanosuit/nanosuit.obj");
@@ -159,9 +166,6 @@ int main()
 	// skybox shader
 	skyboxShader.use();
 	skyboxShader.setInt("skybox", 0);
-	// load textures
-	// draw in wireframe
-   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
    // render loop
    // -----------
@@ -183,92 +187,98 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// don't forget to enable shader before setting uniforms
-		ourShader.use();
-		{ourShader.setVec3("viewPos", camera.Position);
-		//ourShader.setFloat("material.shininess", 32.0f);
+		myShader.use();
+		myShader.setVec3("viewPos", camera.Position);
+		//myShader.setFloat("material.shininess", 32.0f);
 
-		// directional light
-		ourShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		ourShader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-		ourShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-		ourShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-		// point light 1
-		ourShader.setVec3("pointLights[0].position", pointLightPositions[0]);
-		ourShader.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
-		ourShader.setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
-		ourShader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
-		ourShader.setFloat("pointLights[0].constant", 1.0f);
-		ourShader.setFloat("pointLights[0].linear", 0.09);
-		ourShader.setFloat("pointLights[0].quadratic", 0.032);
-		// point light 2
-		ourShader.setVec3("pointLights[1].position", pointLightPositions[1]);
-		ourShader.setVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
-		ourShader.setVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
-		ourShader.setVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
-		ourShader.setFloat("pointLights[1].constant", 1.0f);
-		ourShader.setFloat("pointLights[1].linear", 0.09);
-		ourShader.setFloat("pointLights[1].quadratic", 0.032);
-		// point light 3
-		ourShader.setVec3("pointLights[2].position", pointLightPositions[2]);
-		ourShader.setVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
-		ourShader.setVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
-		ourShader.setVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
-		ourShader.setFloat("pointLights[2].constant", 1.0f);
-		ourShader.setFloat("pointLights[2].linear", 0.09);
-		ourShader.setFloat("pointLights[2].quadratic", 0.032);
-		// point light 4
-		ourShader.setVec3("pointLights[3].position", pointLightPositions[3]);
-		ourShader.setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
-		ourShader.setVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
-		ourShader.setVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
-		ourShader.setFloat("pointLights[3].constant", 1.0f);
-		ourShader.setFloat("pointLights[3].linear", 0.09);
-		ourShader.setFloat("pointLights[3].quadratic", 0.032);
+		if (dirLightEnabled)
+		{
+
+			myShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+			myShader.setVec3("dirLight.ambient", 0.5f, 0.5f, 0.5f);
+			myShader.setVec3("dirLight.diffuse", 0.8f, 0.8f, 0.8f);
+			myShader.setVec3("dirLight.specular", 0.8f, 0.8f, 0.8f);
+		}
+		else
+		{
+			myShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+			myShader.setVec3("dirLight.ambient", 0.02f, 0.02f, 0.02f);
+			myShader.setVec3("dirLight.diffuse", 0.0f, 0.0f, 0.0f);
+			myShader.setVec3("dirLight.specular", 0.0f, 0.0f, 0.0f);
+
+		}
+		
+		if (pointLightEnabled)
+		{
+			myShader.setVec3("pointLights[0].position", pointLightPositions[0]);
+			myShader.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+			myShader.setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+			myShader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+			myShader.setFloat("pointLights[0].constant", 1.0f);
+			myShader.setFloat("pointLights[0].linear", 0.09);
+			myShader.setFloat("pointLights[0].quadratic", 0.032);
+			// point light 2
+			myShader.setVec3("pointLights[1].position", pointLightPositions[1]);
+			myShader.setVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
+			myShader.setVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
+			myShader.setVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
+			myShader.setFloat("pointLights[1].constant", 1.0f);
+			myShader.setFloat("pointLights[1].linear", 0.09);
+			myShader.setFloat("pointLights[1].quadratic", 0.032);
+			// point light 3
+			myShader.setVec3("pointLights[2].position", pointLightPositions[2]);
+			myShader.setVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
+			myShader.setVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
+			myShader.setVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
+			myShader.setFloat("pointLights[2].constant", 1.0f);
+			myShader.setFloat("pointLights[2].linear", 0.09);
+			myShader.setFloat("pointLights[2].quadratic", 0.032);
+			// point light 4
+			myShader.setVec3("pointLights[3].position", pointLightPositions[3]);
+			myShader.setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
+			myShader.setVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
+			myShader.setVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
+			myShader.setFloat("pointLights[3].constant", 1.0f);
+			myShader.setFloat("pointLights[3].linear", 0.09);
+			myShader.setFloat("pointLights[3].quadratic", 0.032);
+		}
 		// spotLight
-		ourShader.setVec3("spotLight.position", camera.Position);
-		ourShader.setVec3("spotLight.direction", camera.Front);
-		ourShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
-		ourShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
-		ourShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
-		ourShader.setFloat("spotLight.constant", 1.0f);
-		ourShader.setFloat("spotLight.linear", 0.09);
-		ourShader.setFloat("spotLight.quadratic", 0.032);
-		ourShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-		ourShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+		if(spotLightEnabled)
+		{
+			myShader.setVec3("spotLight.position", camera.Position);
+			myShader.setVec3("spotLight.direction", camera.Front);
+			myShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+			myShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+			myShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+			myShader.setFloat("spotLight.constant", 1.0f);
+			myShader.setFloat("spotLight.linear", 0.09);
+			myShader.setFloat("spotLight.quadratic", 0.032);
+			myShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+			myShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 		}
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
-		ourShader.setMat4("projection", projection);
-		ourShader.setMat4("view", view);
+		myShader.setMat4("projection", projection);
+		myShader.setMat4("view", view);
 
 		// render cube model
 		glm::mat4 model1 = glm::mat4(1.0f);
 		model1 = glm::translate(model1, glm::vec3(0.0f, -1.90f, 0.0f));
-		model1 = glm::scale(model1, glm::vec3(200.0f, -0.0f, 200.0f));
-		ourShader.setMat4("model", model1);
-		cubeModel.Draw(ourShader);
+		model1 = glm::scale(model1, glm::vec3(500.0f, -0.0f, 500.0f));
+		myShader.setMat4("model", model1);
+		cubeModel.Draw(myShader);
 
 		// render Villa model
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
 		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
-		ourShader.setMat4("model", model);
-		ourModel.Draw(ourShader);
-
-
-
-		for (unsigned int i = 0; i < 4; i++)
-		{
-			// calculate the model matrix for each object and pass it to shader before drawing
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, pointLightPositions[i]);
-			float angle = 20.0f * i;
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			lampShader.setMat4("model", model);
-
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
+		myShader.setMat4("model", model);
+		myShader.setInt("dir", dirLightEnabled);
+		myShader.setInt("point", pointLightEnabled);
+		myShader.setInt("spot", spotLightEnabled);
+		ourModel.Draw(myShader);
+		
 		// draw skybox as last
 		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
 		skyboxShader.use();
@@ -309,9 +319,38 @@ void processInput(GLFWwindow *window)
 		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !dirKeyPressed)
 	{
-		std::cout << camera.Position.x << " \t" << camera.Position.y << " \t" << camera.Position.z<< endl;
+		//std::cout << camera.Position.x << " \t" << camera.Position.y <<*/ " \t" << camera.Position.z<< endl;
+		dirLightEnabled = !dirLightEnabled;
+		dirKeyPressed = true;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
+	{
+		dirKeyPressed = false;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS && !pointKeyPressed)
+	{
+		pointLightEnabled = !pointLightEnabled;
+		pointKeyPressed = true;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_RELEASE)
+	{
+		pointKeyPressed = false;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS && !spotKeyPressed)
+	{
+		spotLightEnabled = !spotLightEnabled;
+		spotKeyPressed = true;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_RELEASE)
+	{
+		spotKeyPressed = false;
 	}
 }
 

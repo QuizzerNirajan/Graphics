@@ -61,6 +61,10 @@ uniform int specularN;
 uniform int nrComponents_d;
 uniform int nrComponents_sp;
 uniform bool spot;
+uniform bool point;
+uniform bool dir;
+
+vec3 result;
 
 // function prototypes
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
@@ -83,14 +87,21 @@ void main()
     // this fragment's final color.
     // == =====================================================
     // phase 1: directional lighting
-
-   vec3 result = CalcDirLight(dirLight, norm, viewDir);
-    // phase 2: point lights
+	
+	 result = CalcDirLight(dirLight, norm, viewDir);
+	 // phase 2: point lights
+	if(point)
+	{
     for(int i = 0; i < NR_POINT_LIGHTS; i++)
-        result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);    
+		result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);  
+	}
     // phase 3: spot light
-   if(spot) result += CalcSpotLight(spotLight, norm, FragPos, viewDir);    
-    
+	if(spot)
+	{
+	 result += CalcSpotLight(spotLight, norm, FragPos, viewDir);    
+	}
+     
+
     FragColor = vec4(result, 1.0);
 	//else FragColor = vec4(result, w);
 	
