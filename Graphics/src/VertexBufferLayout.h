@@ -51,7 +51,7 @@ public:
 	{
 		m_Elements.push_back({ GL_FLOAT, count, GL_FALSE });
 		//m_Stride += count * VertexBufferElement::GetSizeOfType(GL_FLOAT);
-		m_Stride += count * VertexBufferElement::GetSizeOfType(GL_FLOAT);
+		m_Stride += count * sizeof(float);
 	}
 
 	template <>
@@ -59,7 +59,7 @@ public:
 	{
 		m_Elements.push_back({GL_UNSIGNED_INT, count, GL_FALSE });
 		//m_Stride += count * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_INT);
-		m_Stride += count * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_INT);
+		m_Stride += count * sizeof(unsigned int);
 	}
 
 	template <>

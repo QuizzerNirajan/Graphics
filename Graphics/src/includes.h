@@ -1,7 +1,7 @@
 #pragma once
 #ifndef MAIN_H
 #define MAIN_H
-#
+
 #include "stb_image.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>

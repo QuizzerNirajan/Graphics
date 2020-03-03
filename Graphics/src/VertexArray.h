@@ -11,7 +11,7 @@ private:
 public:
 	// Data for the data of vertex buffer and size is the size of it
 	VertexArray();
-	~VertexArray();
+	//~VertexArray();
 	void AddBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout);
 	void Bind() const;
 	void Unbind() const;

@@ -40,15 +40,24 @@ public:
 	std::vector<Vertex> m_vertices;
 	std::vector<unsigned int> m_indices;
 	std::vector<Texture> m_textures;
-	VertexArray m_va;
+	
 
 	/*  Functions  */
 	// constructor
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
-		:m_vertices(vertices), m_indices(indices), m_textures(textures), m_va(),m_vb(&vertices[0], vertices.size() * sizeof(Vertex)) ,m_ib(&indices[0], indices.size())
+		:m_vertices(vertices),
+		m_indices(indices), 
+		m_textures(textures),
+		m_va(),
+		m_ib(&m_indices[0], indices.size()),
+		m_vb(&m_vertices[0], vertices.size() * sizeof(Vertex))
+
 	{
 		// now that we have all the required data, set the vertex buffers and its attribute pointers.
+	
+		
 		setupMesh();
+		std::cout << "Mesh Created" << std::endl;
 	}
 
 	// render the mesh
@@ -86,11 +95,11 @@ public:
 		//cout << diffuseNr << "  " << specularNr << endl;
 		glUniform1i(glGetUniformLocation(shader.ID, "diffuseN"), diffuseNr - 1);
 		glUniform1i(glGetUniformLocation(shader.ID, "specularN"), specularNr - 1);
-
 		m_va.Bind();
 		m_ib.Bind();
 		glDrawElements(GL_TRIANGLES, m_ib.GetCount(), GL_UNSIGNED_INT, nullptr);
 		m_va.Unbind();
+	
 
 	}
 
@@ -99,6 +108,7 @@ private:
 	/*unsigned int VBO, EBO;*/
 	VertexBuffer m_vb;
 	IndexBuffer m_ib;
+	VertexArray m_va;
 	/*  Functions    */
 	// initializes all the buffer objects/arrays
 	void setupMesh()
@@ -116,7 +126,7 @@ private:
 		layout.Push<float>(1);//shininess;
 		
 		m_va.AddBuffer(m_vb, layout);
-
+		std::cout << layout.GetStride()<<std::endl;
 		
 	}
 };
