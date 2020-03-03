@@ -53,11 +53,8 @@ public:
 		m_vb(&m_vertices[0], vertices.size() * sizeof(Vertex))
 
 	{
-		// now that we have all the required data, set the vertex buffers and its attribute pointers.
-	
-		
+		// now that we have all the required data, set the vertex buffers and its attribute pointers.	
 		setupMesh();
-		std::cout << "Mesh Created" << std::endl;
 	}
 
 	// render the mesh
@@ -126,7 +123,6 @@ private:
 		layout.Push<float>(1);//shininess;
 		
 		m_va.AddBuffer(m_vb, layout);
-		std::cout << layout.GetStride()<<std::endl;
 		
 	}
 };
