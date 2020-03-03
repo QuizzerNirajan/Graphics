@@ -67,7 +67,7 @@ uniform bool dir;
 vec3 result;
 
 // function prototypes
-vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
+vec3 CalcDirectionLight(DirLight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 
@@ -88,18 +88,17 @@ void main()
     // == =====================================================
     // phase 1: directional lighting
 	
-	 result = CalcDirLight(dirLight, norm, viewDir);
-	 // phase 2: point lights
+	 result = CalcDirectionLight(dirLight, norm, viewDir);
+	
+
+    // phase 2: point lights
 	if(point)
 	{
     for(int i = 0; i < NR_POINT_LIGHTS; i++)
 		result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);  
 	}
     // phase 3: spot light
-	if(spot)
-	{
-	 result += CalcSpotLight(spotLight, norm, FragPos, viewDir);    
-	}
+	if(spot) result += CalcSpotLight(spotLight, norm, FragPos, viewDir);    
      
 
     FragColor = vec4(result, 1.0);
@@ -108,7 +107,7 @@ void main()
 }
 
 // calculates the color when using a directional light.
-vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
+vec3 CalcDirectionLight(DirLight light, vec3 normal, vec3 viewDir)
 {
     vec3 lightDir = normalize(-light.direction);
     // diffuse shading

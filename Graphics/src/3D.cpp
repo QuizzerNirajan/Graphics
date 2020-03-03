@@ -6,12 +6,14 @@
 #include "VertexBuffer.h"
 #include "VertexBufferLayout.h"
 #include "IndexBuffer.h"
+#include "Lighting.h"
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
+void renderModels();
 
 //load cubemaps
 unsigned int loadCubemap(vector<std::string> faces);
@@ -81,12 +83,10 @@ int main()
 	// build and compile shaders
 	// -------------------------
 	Shader myShader("res/shaders/model_loading.vs", "res/shaders/model_loading.fs");
+	
 	// skybox shader
-	// lamp shader
-	/*Shader lampShader("res/shaders/lamp.vs", "res/shaders/lamp.fs");*/
 	Shader skyboxShader("res/shaders/skybox.vs", "res/shaders/skybox.fs");
 	// load models
-	  //Model ourModel("res/models/nanosuit/nanosuit.obj");
 	Model ourModel("res/models/Villa/Villa.obj");
 	Model cubeModel("res/models/cube/cube.obj");
 
@@ -135,13 +135,7 @@ int main()
 		 1.0f, -1.0f,  1.0f
 	};
 
-	// positions of the point lights
-	glm::vec3 pointLightPositions[] = {
-		 glm::vec3(1.4f,  -0.8f,  -3.8f),
-		 glm::vec3(4.6f, -0.1f, -7.5f),
-		 glm::vec3(6.2f,  -0.6f, -4.4f),
-		 glm::vec3(4.4f,  0.3f, -9.6f)
-	};
+	
 
 
 	// skybox VAO
@@ -191,71 +185,23 @@ int main()
 		myShader.setVec3("viewPos", camera.Position);
 		//myShader.setFloat("material.shininess", 32.0f);
 
-		if (dirLightEnabled)
-		{
+		// Lighting
+		Lighting light(myShader, camera);
 
-			myShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-			myShader.setVec3("dirLight.ambient", 0.5f, 0.5f, 0.5f);
-			myShader.setVec3("dirLight.diffuse", 0.8f, 0.8f, 0.8f);
-			myShader.setVec3("dirLight.specular", 0.8f, 0.8f, 0.8f);
-		}
-		else
-		{
-			myShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-			myShader.setVec3("dirLight.ambient", 0.02f, 0.02f, 0.02f);
-			myShader.setVec3("dirLight.diffuse", 0.0f, 0.0f, 0.0f);
-			myShader.setVec3("dirLight.specular", 0.0f, 0.0f, 0.0f);
-
-		}
+		// directionLight
+		light.setDirLight(dirLightEnabled);
 		
+		// pointLight
 		if (pointLightEnabled)
 		{
-			myShader.setVec3("pointLights[0].position", pointLightPositions[0]);
-			myShader.setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
-			myShader.setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
-			myShader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
-			myShader.setFloat("pointLights[0].constant", 1.0f);
-			myShader.setFloat("pointLights[0].linear", 0.09);
-			myShader.setFloat("pointLights[0].quadratic", 0.032);
-			// point light 2
-			myShader.setVec3("pointLights[1].position", pointLightPositions[1]);
-			myShader.setVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
-			myShader.setVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
-			myShader.setVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
-			myShader.setFloat("pointLights[1].constant", 1.0f);
-			myShader.setFloat("pointLights[1].linear", 0.09);
-			myShader.setFloat("pointLights[1].quadratic", 0.032);
-			// point light 3
-			myShader.setVec3("pointLights[2].position", pointLightPositions[2]);
-			myShader.setVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
-			myShader.setVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
-			myShader.setVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
-			myShader.setFloat("pointLights[2].constant", 1.0f);
-			myShader.setFloat("pointLights[2].linear", 0.09);
-			myShader.setFloat("pointLights[2].quadratic", 0.032);
-			// point light 4
-			myShader.setVec3("pointLights[3].position", pointLightPositions[3]);
-			myShader.setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
-			myShader.setVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
-			myShader.setVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
-			myShader.setFloat("pointLights[3].constant", 1.0f);
-			myShader.setFloat("pointLights[3].linear", 0.09);
-			myShader.setFloat("pointLights[3].quadratic", 0.032);
+			light.setPointLight();
 		}
 		// spotLight
 		if(spotLightEnabled)
 		{
-			myShader.setVec3("spotLight.position", camera.Position);
-			myShader.setVec3("spotLight.direction", camera.Front);
-			myShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
-			myShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
-			myShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
-			myShader.setFloat("spotLight.constant", 1.0f);
-			myShader.setFloat("spotLight.linear", 0.09);
-			myShader.setFloat("spotLight.quadratic", 0.032);
-			myShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-			myShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+			light.setSpotLight();
 		}
+
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
@@ -302,6 +248,11 @@ int main()
 	// ------------------------------------------------------------------
 	glfwTerminate();
 	return 0;
+}
+
+void renderModels()
+{
+
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
