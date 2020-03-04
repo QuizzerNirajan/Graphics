@@ -32,10 +32,10 @@ bld/
 [Ll]ogs/
 
 # Models
-[Mm]odels/
+models/
 
 #Textures
-[Tt]extures/
+textures/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
