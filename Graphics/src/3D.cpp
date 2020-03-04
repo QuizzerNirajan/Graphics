@@ -41,6 +41,8 @@ float lastFrame = 0.0f;
 // lighting
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
+bool shadowMap = false;
+
 int main()
 {
 	// glfw: initialize and configure
@@ -161,6 +163,36 @@ int main()
 	skyboxShader.use();
 	skyboxShader.setInt("skybox", 0);
 
+	//Shadow Mapping
+	Shader simpleDepthShader("res/shaders/shadowmap.vs", "res/shaders/shadowmap.fs");
+	Shader debugDepthQuad("res/shaders/debug_quad.vs", "res/shaders/debug_quad.fs");
+	Shader shadowShader("res/shaders/shadow.vs", "res/shaders/shadow.fs");
+
+
+	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	unsigned int depthMapFBO;
+	glGenFramebuffers(1, &depthMapFBO);
+	// create depth texture
+	unsigned int depthMap;
+	glGenTextures(1, &depthMap);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// attach depth texture as FBO's depth buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	debugDepthQuad.use();
+	debugDepthQuad.setInt("depthMap", 0);
+
+	glm::vec3 lightPos(-2.0f, 4.0f, -1.0f);
+
    // render loop
    // -----------
 	while (!glfwWindowShouldClose(window))
@@ -175,70 +207,168 @@ int main()
 		// -----
 		processInput(window);
 
-		// render
-		// ------
-		glClearColor(0.08f, 0.08f, 0.08f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// don't forget to enable shader before setting uniforms
-		myShader.use();
-		myShader.setVec3("viewPos", camera.Position);
-		//myShader.setFloat("material.shininess", 32.0f);
-
-		// Lighting
-		Lighting light(myShader, camera);
-
-		// directionLight
-		light.setDirLight(dirLightEnabled);
-		
-		// pointLight
-		if (pointLightEnabled)
+		if (shadowMap)
 		{
-			light.setPointLight();
+			//FirstPass Shadow
+			glClearColor(0.08f, 0.08f, 0.08f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			glm::mat4 lightProjection, lightView;
+			glm::mat4 lightSpaceMatrix;
+			float near_plane = 1.0f, far_plane = 7.5f;
+			lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+			lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+			lightSpaceMatrix = lightProjection * lightView;
+
+			simpleDepthShader.use();
+			simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+			glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+			glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+			glClear(GL_DEPTH_BUFFER_BIT);
+
+
+			glm::mat4 model1 = glm::mat4(1.0f);
+			model1 = glm::translate(model1, glm::vec3(0.0f, -1.90f, 0.0f));
+			model1 = glm::scale(model1, glm::vec3(200.0f, -0.0f, 200.0f));
+			simpleDepthShader.setMat4("model", model1);
+			cubeModel.Draw(simpleDepthShader);
+
+			// render Villa model
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
+			model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+			simpleDepthShader.setMat4("model", model);
+			ourModel.Draw(simpleDepthShader);
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+			//Reset View port
+
+			glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			//Second Pase Real Rendering
+
+
+			shadowShader.use();
+			shadowShader.setInt("diffuseTexture", 0);
+			shadowShader.setInt("shadowMap", 1);
+
+			// view/projection transformations
+			glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+			glm::mat4 view = camera.GetViewMatrix();
+			projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+			view = camera.GetViewMatrix();
+			shadowShader.setMat4("projection", projection);
+			shadowShader.setMat4("view", view);
+
+			shadowShader.setVec3("viewPos", camera.Position);
+			shadowShader.setVec3("lightPos", lightPos);
+			shadowShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, depthMap);
+			// render cube model
+			model1 = glm::mat4(1.0f);
+			model1 = glm::translate(model1, glm::vec3(0.0f, -1.90f, 0.0f));
+			model1 = glm::scale(model1, glm::vec3(200.0f, -0.0f, 200.0f));
+			shadowShader.setMat4("model", model1);
+			cubeModel.Draw(shadowShader);
+
+			// render Villa model
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
+			model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+			shadowShader.setMat4("model", model);
+			ourModel.Draw(shadowShader);
+
+			//
+	//// draw skybox as last
+			glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+			skyboxShader.use();
+			view = glm::mat4(glm::mat3(camera.GetViewMatrix()));// remove translation from the view matrix
+			skyboxShader.setMat4("view", view);
+			skyboxShader.setMat4("projection", projection);
+			// skybox cube
+			//glBindVertexArray(skyboxVAO);
+			skyboxVAO.Bind();
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			skyboxVAO.Unbind();
+			glDepthFunc(GL_LESS);
+
 		}
-		// spotLight
-		if(spotLightEnabled)
-		{
-			light.setSpotLight();
+		else {
+			glClearColor(0.08f, 0.08f, 0.08f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			// don't forget to enable shader before setting uniforms
+			myShader.use();
+			myShader.setVec3("viewPos", camera.Position);
+			//myShader.setFloat("material.shininess", 32.0f);
+
+			// Lighting
+			Lighting light(myShader, camera);
+
+			// directionLight
+			light.setDirLight(dirLightEnabled);
+
+			// pointLight
+			if (pointLightEnabled)
+			{
+				light.setPointLight();
+			}
+			// spotLight
+			if (spotLightEnabled)
+			{
+				light.setSpotLight();
+			}
+			glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+			glm::mat4 view = camera.GetViewMatrix();
+			// view/projection transformations
+			myShader.setMat4("projection", projection);
+			myShader.setMat4("view", view);
+
+			// render cube model
+			glm::mat4 model1 = glm::mat4(1.0f);
+			model1 = glm::translate(model1, glm::vec3(0.0f, -1.90f, 0.0f));
+			model1 = glm::scale(model1, glm::vec3(500.0f, -0.0f, 500.0f));
+			myShader.setMat4("model", model1);
+			cubeModel.Draw(myShader);
+
+			// render Villa model
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
+			model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+			myShader.setMat4("model", model);
+			myShader.setInt("dir", dirLightEnabled);
+			myShader.setInt("point", pointLightEnabled);
+			myShader.setInt("spot", spotLightEnabled);
+			ourModel.Draw(myShader);
+
+
+			//
+	//// draw skybox as last
+			glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+			skyboxShader.use();
+			view = glm::mat4(glm::mat3(camera.GetViewMatrix()));// remove translation from the view matrix
+			skyboxShader.setMat4("view", view);
+			skyboxShader.setMat4("projection", projection);
+			// skybox cube
+			//glBindVertexArray(skyboxVAO);
+			skyboxVAO.Bind();
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			skyboxVAO.Unbind();
+			glDepthFunc(GL_LESS);
 		}
 
-		// view/projection transformations
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-		glm::mat4 view = camera.GetViewMatrix();
-		myShader.setMat4("projection", projection);
-		myShader.setMat4("view", view);
-
-		// render cube model
-		glm::mat4 model1 = glm::mat4(1.0f);
-		model1 = glm::translate(model1, glm::vec3(0.0f, -1.90f, 0.0f));
-		model1 = glm::scale(model1, glm::vec3(500.0f, -0.0f, 500.0f));
-		myShader.setMat4("model", model1);
-		cubeModel.Draw(myShader);
-
-		// render Villa model
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
-		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
-		myShader.setMat4("model", model);
-		myShader.setInt("dir", dirLightEnabled);
-		myShader.setInt("point", pointLightEnabled);
-		myShader.setInt("spot", spotLightEnabled);
-		ourModel.Draw(myShader);
+		 //render
+		 //------
 		
-		// draw skybox as last
-		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-		skyboxShader.use();
-		view = glm::mat4(glm::mat3(camera.GetViewMatrix()));// remove translation from the view matrix
-		skyboxShader.setMat4("view", view);
-		skyboxShader.setMat4("projection", projection);
-		// skybox cube
-		//glBindVertexArray(skyboxVAO);
-		skyboxVAO.Bind();
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		skyboxVAO.Unbind();
-		glDepthFunc(GL_LESS); // set depth function back to default
+	 // set depth function back to default
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(window);
@@ -302,6 +432,16 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_RELEASE)
 	{
 		spotKeyPressed = false;
+	}
+	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+	{
+		if (!shadowMap)
+		{
+			shadowMap = true;
+		}
+		else {
+			shadowMap = false;
+		}
 	}
 }
 
