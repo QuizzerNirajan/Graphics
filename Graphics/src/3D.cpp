@@ -270,11 +270,11 @@ int main()
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, depthMap);
 			// render cube model
-			model1 = glm::mat4(1.0f);
+			/*model1 = glm::mat4(1.0f);
 			model1 = glm::translate(model1, glm::vec3(0.0f, -1.90f, 0.0f));
 			model1 = glm::scale(model1, glm::vec3(200.0f, -0.0f, 200.0f));
 			shadowShader.setMat4("model", model1);
-			cubeModel.Draw(shadowShader);
+			cubeModel.Draw(shadowShader);*/
 
 			// render Villa model
 			model = glm::mat4(1.0f);
