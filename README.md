@@ -24,7 +24,7 @@ Have a nice day.
 
 
 
-
+Also insert glew lib in the dependencies
 
 
 
