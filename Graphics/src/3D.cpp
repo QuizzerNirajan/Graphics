@@ -42,6 +42,7 @@ float lastFrame = 0.0f;
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 bool shadowMap = false;
+bool shadowPressed = false;
 
 int main()
 {
@@ -433,16 +434,21 @@ void processInput(GLFWwindow *window)
 	{
 		spotKeyPressed = false;
 	}
-	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+	
+	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && !shadowPressed)
 	{
-		if (!shadowMap)
-		{
-			shadowMap = true;
-		}
-		else {
-			shadowMap = false;
-		}
+		//std::cout << camera.Position.x << " \t" << camera.Position.y <<*/ " \t" << camera.Position.z<< endl;
+		shadowMap = !shadowPressed;
+		shadowPressed = true;
 	}
+
+	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_RELEASE)
+	{
+		shadowPressed = false;
+		shadowMap = false;
+	}
+	
+	
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
