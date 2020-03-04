@@ -31,6 +31,12 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
+# Models
+[Mm]odels/
+
+#Textures
+[Tt]extures/
+
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 # Uncomment if you have tasks that create the project's static files in wwwroot
@@ -61,13 +67,8 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
-# Textures
-*.jpg
 
-# Models
-*.obj
-*.fbx
-*.mtl
+
 
 # StyleCop
 StyleCopReport.xml

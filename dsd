@@ -1,0 +1,32 @@
+[1mdiff --git a/.gitignore b/.gitignore[m
+[1mindex 4a47e82..ea50d34 100644[m
+[1m--- a/.gitignore[m
+[1m+++ b/.gitignore[m
+[36m@@ -31,6 +31,12 @@[m [mbld/[m
+ [Ll]og/[m
+ [Ll]ogs/[m
+ [m
+[32m+[m[32m# Models[m
+[32m+[m[32m[Mm]odels/[m
+[32m+[m
+[32m+[m[32m#Textures[m
+[32m+[m[32m[Tt]extures/[m
+[32m+[m
+ # Visual Studio 2015/2017 cache/options directory[m
+ .vs/[m
+ # Uncomment if you have tasks that create the project's static files in wwwroot[m
+[36m@@ -61,13 +67,8 @@[m [mproject.lock.json[m
+ project.fragment.lock.json[m
+ artifacts/[m
+ [m
+[31m-# Textures[m
+[31m-*.jpg[m
+ [m
+[31m-# Models[m
+[31m-*.obj[m
+[31m-*.fbx[m
+[31m-*.mtl[m
+[32m+[m
+ [m
+ # StyleCop[m
+ StyleCopReport.xml[m
