@@ -18,8 +18,8 @@ void renderModels();
 //load cubemaps
 unsigned int loadCubemap(vector<std::string> faces);
 // settings
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
+const unsigned int SCR_WIDTH = 1600;
+const unsigned int SCR_HEIGHT = 960;
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));

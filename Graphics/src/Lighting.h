@@ -33,7 +33,7 @@ public:
 		else
 		{
 			m_Shader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-			m_Shader.setVec3("dirLight.ambient", 0.02f, 0.02f, 0.02f);
+			m_Shader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05);
 			m_Shader.setVec3("dirLight.diffuse", 0.0f, 0.0f, 0.0f);
 			m_Shader.setVec3("dirLight.specular", 0.0f, 0.0f, 0.0f);
 		}
