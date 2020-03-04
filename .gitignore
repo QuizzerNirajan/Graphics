@@ -62,10 +62,10 @@ project.fragment.lock.json
 artifacts/
 
 # Textures
-textures/
+/Graphics/res/textures/
 
 # Models
-models/
+/Graphics/res/textures/
 # StyleCop
 StyleCopReport.xml
 
